@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services</title>
+</head>
+<body>
+
+<section id="service-container">
+    <!-- Service blocks will be dynamically created here -->
+</section>
+
+<script>
+// Fetch services data from service.json
+fetch('service.json')
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('service-container');
+        
+        // Iterate over each service in the JSON
+        Object.keys(data).forEach((key) => {
+            const service = data[key];
+            
+            // Create a block for each service
+            const serviceBlock = document.createElement('div');
+            serviceBlock.classList.add('service-block');
+            serviceBlock.innerHTML = `
+                <img src="${service.icon}" alt="${service.title} icon" style="width:50px;height:50px;">
+                <h3><a href="service-details.html?service=${key}">${service.title}</a></h3>
+                <p>${service.description}</p>
+            `;
+            container.appendChild(serviceBlock);
+        });
+    })
+    .catch(error => console.error('Error loading service.json:', error));
+</script>
+
+</body>
+</html>

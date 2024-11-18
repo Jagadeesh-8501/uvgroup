@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Listings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .delete-button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .delete-button:hover {
+            background-color: #e63946;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Job Listings</h1>
+        <div id="jobsContainer">
+            <p>Loading jobs...</p>
+        </div>
+    </div>
+
+    <script>
+        async function fetchJobs() {
+            try {
+                const response = await fetch('jobs.json'); // Replace with the correct file path
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const jobsData = await response.json();
+                displayJobs(jobsData.jobs);
+            } catch (error) {
+                console.error("Error fetching jobs:", error);
+                document.getElementById("jobsContainer").innerHTML = `<p>Error loading jobs. Please try again later.</p>`;
+            }
+        }
+
+        function displayJobs(jobs) {
+            const jobsContainer = document.getElementById("jobsContainer");
+            jobsContainer.innerHTML = ''; // Clear previous content
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Responsibilities</th>
+                            <th>Skills</th>
+                            <th>Qualifications</th>
+                            <th>Benefits</th>
+                            <th>Posted On</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            jobs.forEach((job, index) => {
+                tableHTML += `
+                    <tr>
+                        <td>${job.title}</td>
+                        <td>${job.location}</td>
+                        <td>${job.type}</td>
+                        <td>${job.jobDescription}</td>
+                        <td>${job.keyResponsibilities.join(', ')}</td>
+                        <td>${job.requiredSkills.join(', ')}</td>
+                        <td>${job.qualifications.join(', ')}</td>
+                        <td>${job.benefits.join(', ')}</td>
+                        <td>${job.postingDate}</td>
+                        <td><button class="delete-button" onclick="deleteJob(${index})">Delete</button></td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</tbody></table>';
+            jobsContainer.innerHTML = tableHTML;
+        }
+
+        async function deleteJob(jobIndex) {
+            try {
+                const response = await fetch('/deleteJob', { // POST request to the server to delete the job
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ index: jobIndex }) // Sending the job index to delete
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Re-fetch the jobs after deletion
+                fetchJobs();
+            } catch (error) {
+                console.error("Error deleting job:", error);
+            }
+        }
+
+        // Call fetchJobs to load the jobs initially
+        fetchJobs();
+    </script>
+</body>
+</html>
